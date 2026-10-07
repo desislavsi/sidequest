@@ -4,7 +4,7 @@ SideQuest turns a family's reason to stay inside into an original real-world mis
 
 ## Run locally
 
-1. Install Node 24+ and Ollama, then pull the local model: `ollama pull gemma4:e4b`. On this machine Ollama is at `D:\Ollama\ollama.exe`; use its full path if `ollama` is not on `PATH`.
+1. Install Node 24+ and Ollama, then pull the local model: `ollama pull gemma4:e4b`. If `ollama` is not on `PATH`, use the full path to its executable.
 2. Run `npm install` in this directory.
 3. Copy `.env.example` to `.env` if you need custom ports or paths.
 4. Run `npm run dev` and open <http://127.0.0.1:5174>.

@@ -22,9 +22,10 @@
 ## Local demo commands
 
 ```powershell
-cd D:\users\desko\Documents\Code\AI\sidequest
+git clone https://github.com/desislavsi/sidequest.git
+cd sidequest
 npm install
-& D:\Ollama\ollama.exe pull gemma4:e4b
+ollama pull gemma4:e4b
 npm run dev
 ```
 
