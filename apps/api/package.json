@@ -1,0 +1,27 @@
+{
+  "name": "@sidequest/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "smoke:gemma": "tsx src/smoke-gemma.ts",
+    "smoke:blockers": "tsx src/smoke-blockers.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.0",
+    "@fastify/cors": "^11.0.1",
+    "@mastra/core": "^1.0.0",
+    "@sidequest/contracts": "*",
+    "dotenv": "^17.2.2",
+    "fastify": "^5.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
