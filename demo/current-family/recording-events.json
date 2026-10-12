@@ -1,0 +1,70 @@
+[
+  {
+    "name": "intro",
+    "seconds": 0.03
+  },
+  {
+    "name": "family_profiles",
+    "seconds": 7.47
+  },
+  {
+    "name": "blocker_example",
+    "seconds": 16.67
+  },
+  {
+    "name": "blocker_selected",
+    "seconds": 20.71
+  },
+  {
+    "name": "time_selected",
+    "seconds": 29.31
+  },
+  {
+    "name": "distance_selected",
+    "seconds": 37.93
+  },
+  {
+    "name": "first_generation_start",
+    "seconds": 44.47
+  },
+  {
+    "name": "first_mission_ready",
+    "seconds": 59.07
+  },
+  {
+    "name": "print_preview",
+    "seconds": 74.02
+  },
+  {
+    "name": "return_home",
+    "seconds": 86.2
+  },
+  {
+    "name": "completion_dialog",
+    "seconds": 93.28
+  },
+  {
+    "name": "completion_choices",
+    "seconds": 101.37
+  },
+  {
+    "name": "reward",
+    "seconds": 107.97
+  },
+  {
+    "name": "next_setup",
+    "seconds": 122.19
+  },
+  {
+    "name": "second_generation_start",
+    "seconds": 137.25
+  },
+  {
+    "name": "second_mission_ready",
+    "seconds": 150.44
+  },
+  {
+    "name": "outro",
+    "seconds": 164.63
+  }
+]

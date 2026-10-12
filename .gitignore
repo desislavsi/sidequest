@@ -3,3 +3,5 @@ dist/
 .data/
 .env
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
