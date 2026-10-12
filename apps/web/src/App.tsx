@@ -46,6 +46,29 @@ function ProfileEditor({ profile, onClose, onSave, onRemove }: { profile?: Profi
   </div></div>;
 }
 
+function GenerationOverlay({ slow, cancelling, canCancel, onCancel }: { slow: boolean; cancelling: boolean; canCancel: boolean; onCancel: () => void }) {
+  const cancelButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (canCancel && !cancelling) cancelButton.current?.focus(); }, [canCancel, cancelling]);
+
+  const status = cancelling
+    ? 'Stopping your mission…'
+    : slow
+      ? 'Gemma is still working on your computer. You can keep waiting or cancel.'
+      : 'Gemma is finding a quest that fits your family.';
+
+  return <div className="generation-overlay">
+    <section className="generation-panel" role="dialog" aria-modal="true" aria-labelledby="generation-title" aria-describedby="generation-status">
+      <div className="generation-orbit" aria-hidden="true"><span>✦</span></div>
+      <div className="generation-kicker">LOCAL AI AT WORK</div>
+      <h2 id="generation-title">Making your<br /><em>SideQuest.</em></h2>
+      <p id="generation-status" role="status" aria-live="polite">{status}</p>
+      <div className="generation-indicator" aria-hidden="true"><span /><span /><span /></div>
+      <button ref={cancelButton} type="button" className="generation-cancel" disabled={!canCancel || cancelling} onClick={onCancel}>{cancelling ? 'STOPPING…' : 'CANCEL GENERATION'}</button>
+      <small>This may take longer on some computers.</small>
+    </section>
+  </div>;
+}
+
 export default function App() {
   const [state, setState] = useState<State | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -128,7 +151,15 @@ export default function App() {
     catch (caught) { setError(caught instanceof Error ? caught.message : 'Could not remove profile.'); }
   }
 
-  return <div className="app-shell">
+  const showGenerationOverlay = Boolean(state && !state.activeMission && (state.generating || (busy && generationAbort.current)));
+  useEffect(() => {
+    if (!showGenerationOverlay) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [showGenerationOverlay]);
+
+  return <><div className="app-shell" inert={showGenerationOverlay}>
     <header className="site-header"><div className="site-logo">SIDE<span>QUEST</span><i>✦</i></div><div className="header-right"><span className="local-badge"><span /> LOCAL AI</span><span className="streak-badge">🔥 <strong>{state?.streak ?? 0}</strong> DAY STREAK</span></div></header>
     {error && <div className="error-banner" role="alert">{error}<button onClick={() => setError('')} aria-label="Dismiss error">×</button></div>}
     {!state ? <main className="loading-screen"><div className="spinner" /><p>Opening SideQuest…</p><button onClick={() => load().catch((caught) => setError(String(caught)))}>Retry</button></main> : reward ? <main className="reward-view">
@@ -144,11 +175,10 @@ export default function App() {
       <div className="home-hero"><div><div className="eyebrow">REAL-WORLD ADVENTURES, MADE FOR YOUR FAMILY <span>✦</span></div><h1>GET US <em>OUT.</em></h1><p>Turn “we should get out of the house, but…” into a mission they’ll actually want to do.</p></div><div className="hero-doodle" aria-hidden="true"><span className="doodle-sun">✳</span><span className="doodle-path">↝</span><span className="doodle-flag">⚑</span></div></div>
       <section className="setup-panel"><div className="section-heading"><div><span className="section-number">01</span><h2>Who's going?</h2></div><button className="subtle-button" onClick={() => setEditing('new')}>＋ ADD FAMILY MEMBER</button></div><div className="profiles-row">{state.profiles.map((profile) => <div className={`profile-card ${selected.includes(profile.id) ? 'active' : ''}`} key={profile.id}><button className="profile-select" aria-pressed={selected.includes(profile.id)} onClick={() => setSelected((current) => current.includes(profile.id) ? current.filter((id) => id !== profile.id) : current.length < 6 ? [...current, profile.id] : current)}><span className="profile-avatar">{profile.name.slice(0, 1).toUpperCase()}</span><span className="profile-info"><strong>{profile.name}</strong><small>LVL {profile.level} · {profile.rank}</small></span><span className="profile-check">✓</span></button><div className="profile-bottom"><div className="progress-track"><div style={{ width: `${profile.progressXp / profile.nextLevelXp * 100}%` }} /></div><span>{profile.progressXp} / {profile.nextLevelXp} XP</span><button onClick={() => setEditing(profile)} aria-label={`Edit ${profile.name}`}>EDIT</button></div><p>{profile.interests.join(' · ') || 'Add interests'}</p></div>)}</div></section>
       <section className="setup-panel choices-panel"><div className="section-heading"><div><span className="section-number">02</span><h2>What's stopping you?</h2></div></div><ChoiceGroup title="CHOOSE YOUR BLOCKER" options={blockerOptions} value={blocker} onChange={setBlocker} /><div className="details-grid"><ChoiceGroup title="HOW MUCH TIME?" options={timeOptions} value={timeBudget} onChange={setTimeBudget} /><ChoiceGroup title="HOW FAR?" options={distanceOptions} value={distance} onChange={setDistance} /></div></section>
-      <div className="launch-row"><div><strong>ONE CLICK. ONE QUEST. A WHOLE NEW STORY.</strong><span>Made locally with Gemma. Made real by your family.</span></div><button className="launch-button" disabled={busy || state.generating || !selected.length} onClick={createMission}>{busy || state.generating ? generationSlow ? 'GEMMA IS STILL CREATING…' : 'CREATING YOUR SIDEQUEST LOCALLY…' : 'GET US OUT'} <span>↗</span></button></div>
-      {(busy || state.generating) && <div className="generation-note" role="status"><span>{cancellingGeneration ? 'Stopping local generation…' : generationSlow || state.generating ? 'Gemma is still creating your mission locally. You can keep waiting or cancel.' : 'Creating a quest that fits your family and today’s blocker…'}</span><button type="button" disabled={cancellingGeneration || !state.generating} onClick={cancelGeneration}>CANCEL GENERATION</button></div>}
+      <div className="launch-row"><div><strong>ONE CLICK. ONE QUEST. A WHOLE NEW STORY.</strong><span>Made locally with Gemma. Made real by your family.</span></div><button className="launch-button" disabled={busy || state.generating || !selected.length} onClick={createMission}>GET US OUT <span>↗</span></button></div>
       {state.history.length > 0 && <section className="history-section"><h2>PAST ADVENTURES</h2><div>{state.history.slice(0, 5).map((item) => <div className="history-item" key={item.id}><strong>{item.title}</strong><span>{item.date} · {item.participants.join(', ')}</span><b>{item.rating === 'great' ? '★ GREAT!' : item.rating.toUpperCase()}</b></div>)}</div></section>}
     </main>}
     {editing && <ProfileEditor profile={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} onSave={saveProfile} onRemove={editing !== 'new' && !state?.activeMission ? () => removeProfile(editing) : undefined} />}
     {completing && state?.activeMission && <div className="dialog-backdrop"><div className="dialog completion-dialog" role="dialog" aria-modal="true" aria-label="Complete mission"><button className="dialog-close" onClick={() => setCompleting(false)} aria-label="Close">×</button><div className="eyebrow">WELCOME BACK, SQUAD</div><h2>Mission complete?</h2><p>Confirm the quest, then tell us how it went. No proof needed.</p><div className="dialog-group"><strong>BONUS OBJECTIVE</strong><div className="dialog-choice-row"><button className={bonusCompleted ? 'selected' : ''} onClick={() => setBonusCompleted(true)}>Yes, we did it</button><button className={!bonusCompleted ? 'selected' : ''} onClick={() => setBonusCompleted(false)}>Not this time</button></div></div><div className="dialog-group"><strong>HOW WAS IT?</strong><div className="dialog-choice-row">{(['boring', 'okay', 'great'] as const).map((option) => <button className={rating === option ? 'selected' : ''} key={option} onClick={() => setRating(option)}>{option === 'great' ? 'Great!' : option === 'okay' ? 'Okay' : 'Boring'}</button>)}</div></div><button className="primary-button" disabled={busy} onClick={completeMission}>{busy ? 'Saving…' : 'CONFIRM MISSION COMPLETE'}</button></div></div>}
-  </div>;
+  </div>{showGenerationOverlay && <GenerationOverlay slow={generationSlow || !busy} cancelling={cancellingGeneration} canCancel={Boolean(state?.generating)} onCancel={cancelGeneration} />}</>;
 }
